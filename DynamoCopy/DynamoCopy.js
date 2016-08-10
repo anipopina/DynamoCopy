@@ -42,13 +42,14 @@ exports.handler = function (event, context) {
 			"TableName": sourceTableName,
 			"Select": "ALL_ATTRIBUTES"
 		};
-		dynamo.scan(param, function (err, data) {
+		dynamo.scan(params, function (err, data) {
 			action(data);
 		});
 	};
 	
 	writeData = function (sourceData, action) {
 		console.log(sourceData);
+		action();
 	};
 	
 	main();
