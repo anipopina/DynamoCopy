@@ -30,26 +30,35 @@ exports.handler = function (event, context) {
 
 	main = function () {
 		// get source data
-		getSourceData(function (sourceData) {
-			writeData(sourceData, function () {
-				context.succeed();
-			});
+		getSourceData(function (items) {
+			writeData(items);
 		});
 	};
 	
 	getSourceData = function (action) {
-		var params = {
+		var param = {
 			"TableName": sourceTableName,
 			"Select": "ALL_ATTRIBUTES"
 		};
-		dynamo.scan(params, function (err, data) {
-			action(data);
+		dynamo.scan(param, function (err, data) {
+			if (err) {
+				context.fail('scan failed: ' + err);
+			} else {
+				action(data.Items);
+			}
 		});
 	};
 	
-	writeData = function (sourceData, action) {
-		console.log(sourceData);
-		action();
+	writeData = function (items) {
+		items.forEach(function (item) {
+			var param = {
+				"TableName": destTableName,
+				"Item": item
+			};
+			dynamo.putItem(param, function (err) {
+				if (err) context.fail('putItem failed: ' + err);
+			});
+		});
 	};
 	
 	main();
